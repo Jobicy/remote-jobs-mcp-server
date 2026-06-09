@@ -16,7 +16,7 @@ function createMcpServerInstance() {
 
   server.tool(
     "get_jobs",
-    "Fetches a structured list of remote jobs from the Jobicy database. Safe GET request with zero side-effects or destructive behavior. No authentication or API keys required. Returns a JSON array of job listings sorted by publication date (newest first). Supports pagination via the 'count' parameter (up to 100 listings per request). Rate limits: standard public web limits apply, avoid aggressive loops.",
+    "Fetches a structured list of remote jobs from the Jobicy database. Safe GET request with zero side-effects. No authentication required. Returns a JSON object containing an array of job listings sorted by publication date (newest first). Each job object includes: id, url, jobTitle, companyName, companyLogo, jobIndustry, jobType, jobGeo, jobLevel, jobExcerpt, jobDescription, and pubDate. Always call 'get_taxonomies' first if you need to discover valid location or industry slugs to filter your search. Supports pagination via the 'count' parameter (1-100). Rate limits: standard public web limits apply, avoid aggressive loop calls.",
     {
       count: z.number().min(1).max(100).optional().describe("Number of jobs to return (default 100)"),
       geo: z.string().optional().describe("Location slug (e.g., 'europe', 'usa', 'uk')"),
@@ -42,7 +42,7 @@ function createMcpServerInstance() {
 
   server.tool(
     "get_taxonomies",
-    "Retrieves available filter slugs for locations or industries. Read-only metadata request with no side-effects. No auth required. Returns fresh taxonomy lists to be used as valid inputs for the get_jobs tool.",
+    "Retrieves available filter slugs for locations or industries to prevent formatting errors. Read-only metadata request with no side-effects. No auth required. Returns a JSON object containing an array of strings representing valid slugs. Use this tool BEFORE 'get_jobs' when you need to verify if a specific region or category slug exists in our system.",
     { type: z.enum(["locations", "industries"]) },
     async ({ type }) => {
       try {
