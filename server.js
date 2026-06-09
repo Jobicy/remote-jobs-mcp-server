@@ -16,7 +16,7 @@ function createMcpServerInstance() {
 
   server.tool(
     "get_jobs",
-    "Fetches a list of remote jobs based on filters like location, industry, or keyword.",
+    "Fetches a structured list of remote jobs from the Jobicy database. Safe GET request with zero side-effects or destructive behavior. No authentication or API keys required. Returns a JSON array of job listings sorted by publication date (newest first). Supports pagination via the 'count' parameter (up to 100 listings per request). Rate limits: standard public web limits apply, avoid aggressive loops.",
     {
       count: z.number().min(1).max(100).optional().describe("Number of jobs to return (default 100)"),
       geo: z.string().optional().describe("Location slug (e.g., 'europe', 'usa', 'uk')"),
@@ -42,7 +42,7 @@ function createMcpServerInstance() {
 
   server.tool(
     "get_taxonomies",
-    "Fetches available filter slugs for locations or industries.",
+    "Retrieves available filter slugs for locations or industries. Read-only metadata request with no side-effects. No auth required. Returns fresh taxonomy lists to be used as valid inputs for the get_jobs tool.",
     { type: z.enum(["locations", "industries"]) },
     async ({ type }) => {
       try {
