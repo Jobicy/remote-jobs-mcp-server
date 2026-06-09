@@ -1,4 +1,6 @@
-import { McpServer, SSEServerTransport, StdioServerTransport } from "@modelcontextprotocol/sdk/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import express from "express";
 import cors from "cors";
 import { z } from "zod";
