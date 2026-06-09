@@ -46,3 +46,7 @@ If you prefer to run the server locally on your machine:
 
 ### License
 MIT
+
+---
+
+[![remote-jobs-mcp-server MCP server](https://glama.ai/mcp/servers/Jobicy/remote-jobs-mcp-server/badges/card.svg)](https://glama.ai/mcp/servers/Jobicy/remote-jobs-mcp-server)
