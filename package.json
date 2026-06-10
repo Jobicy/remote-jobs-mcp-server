@@ -5,7 +5,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "stdio": "node server.js --stdio",
+    "check": "node --check server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
@@ -19,8 +21,22 @@
     "jobicy",
     "remote-jobs",
     "anthropic",
-    "claude"
+    "claude",
+    "cursor",
+    "cline",
+    "ai-agents"
   ],
   "author": "Jobicy",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nycreatis/remote-jobs-mcp-server.git"
+  },
+  "homepage": "https://jobicy.com/jobs-rss-feed#section-mcp",
+  "bugs": {
+    "url": "https://github.com/nycreatis/remote-jobs-mcp-server/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }
