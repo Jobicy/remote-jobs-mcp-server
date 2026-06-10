@@ -104,8 +104,7 @@ if (process.argv.includes("--stdio")) {
   const app = express();
 
   app.use(cors());
-  app.use(express.json());
-
+  
   const activeSessions = new Map();
 
   app.get("/mcp", async (req, res) => {
