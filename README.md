@@ -1,6 +1,8 @@
 # Jobicy Remote Jobs MCP Server
 
-An official Model Context Protocol (MCP) server for the [Jobicy](https://jobicy.com) remote jobs database. This server allows AI models (like Claude, Cursor, Cline) to interact directly with real-time remote job listings.
+Official MCP server for [Jobicy](https://jobicy.com), providing AI assistants with access to over 150,000 remote job opportunities from companies worldwide across 20+ professional industries.
+
+AI clients such as Claude, Cursor, Cline, and other MCP-compatible tools can search, filter, and retrieve real-time remote jobs directly from the Jobicy database.
 
 ## Available Tools
 
