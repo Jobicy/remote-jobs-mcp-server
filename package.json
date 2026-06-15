@@ -12,8 +12,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
     "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "zod": "^3.23.8"
+    "express": "^4.21.0"
   },
   "keywords": [
     "mcp",
