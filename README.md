@@ -1,6 +1,6 @@
 # Jobicy Remote Jobs MCP Server
 
-Official MCP server for [Jobicy](https://jobicy.com), providing AI assistants with access to over 150,000 remote job opportunities from companies worldwide across 20+ professional industries.
+Official MCP server for [Jobicy](https://jobicy.com), providing AI assistants with access to thousands of remote jobs from leading companies worldwide across 20+ professional industries.
 
 AI clients such as Claude, Cursor, Cline, and other MCP-compatible tools can search, filter, and retrieve real-time remote jobs directly from the Jobicy database.
 
