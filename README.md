@@ -13,10 +13,13 @@ AI clients such as Claude, Cursor, Cline, and other MCP-compatible tools can sea
 
 ## Usage
 
-You can connect to this server in two ways: via our hosted public SSE endpoint, or by running it locally using `stdio`.
+You can connect to this server in three ways: via our hosted public endpoint, via legacy SSE, or by running it locally using `stdio`.
 
-### 1. Public SSE Endpoint (Recommended)
-You can connect your AI clients directly to our cloud-hosted server. Add this to your `claude_desktop_config.json` or Cursor settings:
+### 1. Streamable HTTP (Recommended)
+
+The default transport for all modern MCP clients (Claude.ai, Cursor, Cline, etc.).
+
+Add this to your `claude_desktop_config.json` or equivalent:
 
 ```json
 {
@@ -28,12 +31,28 @@ You can connect your AI clients directly to our cloud-hosted server. Add this to
 }
 ```
 
-### 2. Local Installation (via Stdio)
+### 2. Legacy SSE Endpoint
+
+For older MCP clients that require SSE transport:
+
+```json
+{
+  "mcpServers": {
+    "jobicy-jobs": {
+      "url": "https://jobicy.com/mcp/sse",
+      "type": "sse"
+    }
+  }
+}
+```
+
+### 3. Local Installation (via Stdio)
+
 If you prefer to run the server locally on your machine:
 
 1. Clone this repository.
-2. Install dependencies: npm install
-3. Add the server to your configuration using node and the --stdio flag:
+2. Install dependencies: `npm install`
+3. Add the server to your configuration using `node` and the `--stdio` flag:
 
 ```json
 {
