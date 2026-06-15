@@ -1,13 +1,18 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import express from "express";
 import cors from "cors";
 
 const API_BASE_URL = "https://jobicy.com/api/v2/remote-jobs.php";
 const PORT = process.env.PORT || 3001;
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const activeSessions = new Map();
 
 function createMcpServerInstance() {
   const server = new Server(
@@ -47,7 +52,7 @@ function createMcpServerInstance() {
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+    const { name, arguments: args = {} } = request.params;
 
     if (name === "get_jobs") {
       try {
@@ -83,51 +88,47 @@ function createMcpServerInstance() {
   return server;
 }
 
-
-if (process.argv.includes("--stdio")) {
-  const serverInstance = createMcpServerInstance();
-  const transport = new StdioServerTransport();
-  
-  await serverInstance.connect(transport);
-  
-  console.error("Jobicy MCP Server running via stdio");
-
-} else {
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
-
-  const activeSessions = new Map();
-
-  app.post("/mcp", async (req, res) => {
-    try {
-      const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-      const serverInstance = createMcpServerInstance();
-      await serverInstance.connect(transport);
-      await transport.handleRequest(req, res, req.body);
-    } catch (error) {
-      if (!res.headersSent) res.status(500).send(`MCP error: ${error.message}`);
-    }
-  });
-
-  app.get("/mcp/sse", async (req, res) => {
-    const transport = new SSEServerTransport("/messages", res);
-    const sessionId = transport.sessionId;
+app.post("/mcp", async (req, res) => {
+  try {
+    const transport = new StreamableHTTPServerTransport();
     const serverInstance = createMcpServerInstance();
-    
-    activeSessions.set(sessionId, { server: serverInstance, transport });
-    req.on("close", () => activeSessions.delete(sessionId));
-    
     await serverInstance.connect(transport);
-  });
+    await transport.handleRequest(req, res, req.body);
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).send(`MCP error: ${error.message}`);
+    }
+  }
+});
 
-  app.post("/messages", async (req, res) => {
-    const sessionId = req.query.sessionId;
-    const session = activeSessions.get(sessionId);
-    if (!session) return res.status(400).send("Invalid or expired sessionId");
-    
-    await session.transport.handlePostMessage(req, res);
+app.get("/mcp", (req, res) => {
+  res.json({
+    name: "Jobicy Remote Jobs MCP Server",
+    version: "1.0.0",
+    protocol: "MCP Streamable HTTP",
+    endpoints: {
+      mcp: "POST https://jobicy.com/mcp",
+      sse: "GET https://jobicy.com/mcp/sse",
+      discovery: "GET https://jobicy.com/.well-known/mcp.json"
+    },
+    docs: "https://github.com/Jobicy/remote-jobs-mcp-server"
   });
+});
 
-  app.listen(PORT, () => console.log(`Jobicy MCP Server running on port ${PORT}`));
-}
+app.get("/mcp/sse", async (req, res) => {
+  const transport = new SSEServerTransport("/messages", res);
+  const sessionId = transport.sessionId;
+  const serverInstance = createMcpServerInstance();
+  activeSessions.set(sessionId, { server: serverInstance, transport });
+  req.on("close", () => activeSessions.delete(sessionId));
+  await serverInstance.connect(transport);
+});
+
+app.post("/messages", async (req, res) => {
+  const sessionId = req.query.sessionId;
+  const session = activeSessions.get(sessionId);
+  if (!session) return res.status(400).send("Invalid or expired sessionId");
+  await session.transport.handlePostMessage(req, res);
+});
+
+app.listen(PORT, () => console.log(`Jobicy MCP Server running on port ${PORT}`));
