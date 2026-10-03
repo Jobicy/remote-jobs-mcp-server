@@ -1,0 +1,18 @@
+{
+  "name": "jobicy-remote-jobs",
+  "version": "2.0.0",
+  "serverInfo": {
+    "name": "Jobicy Remote Jobs",
+    "version": "2.0.0",
+    "description": "MCP server providing public Jobicy jobs, companies, roles and taxonomies"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://jobicy.com/mcp"
+  },
+  "mcpServers": {
+    "jobicy-remote-jobs": {
+      "url": "https://jobicy.com/mcp"
+    }
+  }
+}
