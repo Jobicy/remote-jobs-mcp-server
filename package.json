@@ -1,18 +1,20 @@
 {
   "name": "jobicy-mcp-server",
-  "version": "1.0.0",
-  "description": "Model Context Protocol (MCP) server for Jobicy remote jobs database",
+  "version": "2.0.0",
+  "description": "Public read-only MCP server for Jobicy jobs, companies, roles and taxonomies",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "stdio": "node server.js --stdio",
-    "check": "node --check server.js"
+    "check": "node --check server.js && node --check src/tools.js && node --check src/resources.js",
+    "test": "node --test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0",
-    "cors": "^2.8.5",
-    "express": "^4.21.0"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "8.5.2",
+    "zod": "^4.4.3"
   },
   "keywords": [
     "mcp",
@@ -29,11 +31,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nycreatis/remote-jobs-mcp-server.git"
+    "url": "https://github.com/Jobicy/remote-jobs-mcp-server.git"
   },
   "homepage": "https://jobicy.com/jobs-rss-feed#section-mcp",
   "bugs": {
-    "url": "https://github.com/nycreatis/remote-jobs-mcp-server/issues"
+    "url": "https://github.com/Jobicy/remote-jobs-mcp-server/issues"
   },
   "engines": {
     "node": ">=18"
