@@ -1,6 +1,6 @@
 # Jobicy Remote Jobs MCP
 
-Connect an AI assistant to [Jobicy](https://jobicy.com) to find public remote jobs, read individual vacancies, discover companies and career roles, and resolve Jobicy filter names. This repository documents the **hosted** MCP service. You do not need to install or run a server.
+Connect an AI assistant to [Jobicy](https://jobicy.com) to find public remote jobs, read individual vacancies, discover companies and career roles, and resolve Jobicy filter names. The production MCP service is hosted at `https://jobicy.com/mcp`. This repository also contains a standalone Node.js MCP server for clients and hosting platforms that run a local process. It uses only public Jobicy API endpoints and does not contain the site's backend.
 
 ## Connect your MCP client
 
@@ -22,7 +22,26 @@ Clients that use a JSON MCP configuration can use this example:
 
 Older clients that support only SSE can connect to `https://jobicy.com/mcp/sse` with transport type `sse`. The client handles the associated `/messages` route. The [MCP discovery document](https://jobicy.com/.well-known/mcp.json) is also available.
 
-After connecting, ask your assistant to list available MCP tools. You should see `search_jobs`, `get_job`, and the other tools below. If your client does not support remote MCP servers, use a client or connector that supports Streamable HTTP or SSE; this repository does not provide a local stdio server.
+After connecting, ask your assistant to list available MCP tools. You should see `search_jobs`, `get_job`, and the other tools below.
+
+## Run the repository server
+
+Requires Node.js 20 or newer. Install dependencies with `pnpm install --frozen-lockfile`, then run `node server.js`. The process speaks MCP over standard input and output; it is intended to be launched by an MCP client or hosting platform. No Jobicy credentials are required. All job, company, role, and taxonomy data comes from the public Jobicy APIs.
+
+A client that supports local MCP commands can use:
+
+```json
+{
+  "mcpServers": {
+    "jobicy": {
+      "command": "node",
+      "args": ["/absolute/path/to/remote-jobs-mcp-server/server.js"]
+    }
+  }
+}
+```
+
+For Glama's Dockerfile configuration, build the repository with `pnpm install --frozen-lockfile` and start the local process with `mcp-proxy -- node server.js`. Do not configure `mcp-remote` or the hosted `/mcp` URL as the container command: Glama's repository build runs the MCP process from this source. The live Jobicy endpoint remains available independently.
 
 ## Find jobs
 
