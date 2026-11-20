@@ -1,14 +1,18 @@
 # Jobicy Remote Jobs MCP
 
-Connect an AI assistant to [Jobicy](https://jobicy.com) to find public remote jobs, read individual vacancies, discover companies and career roles, and resolve Jobicy filter names. The production MCP service is hosted at `https://jobicy.com/mcp`. This repository also contains a standalone Node.js MCP server for clients and hosting platforms that run a local process. It uses only public Jobicy API endpoints and does not contain the site's backend.
+The official public Jobicy MCP service is hosted at **https://jobicy.com/mcp**. It provides read-only tools for finding remote jobs, reading vacancies, exploring companies and career roles, and browsing public filter taxonomies.
 
-## Connect your MCP client
+This repository is a connector and documentation for the hosted MCP service. It does **not** host a second Jobicy API, query the Jobicy database, or call separate Jobicy REST endpoints.
 
-**Streamable HTTP URL:** `https://jobicy.com/mcp`
+## Connect directly (recommended)
 
-In an MCP client that accepts a remote server URL, add a server named `jobicy` and paste that URL. If the client asks for a transport, select **Streamable HTTP**. No Jobicy account or access token is required for these public, read-only tools.
+Add the following Streamable HTTP endpoint to an MCP-compatible client:
 
-Clients that use a JSON MCP configuration can use this example:
+```text
+https://jobicy.com/mcp
+```
+
+Clients that accept a JSON MCP configuration can use:
 
 ```json
 {
@@ -20,15 +24,20 @@ Clients that use a JSON MCP configuration can use this example:
 }
 ```
 
-Older clients that support only SSE can connect to `https://jobicy.com/mcp/sse` with transport type `sse`. The client handles the associated `/messages` route. The [MCP discovery document](https://jobicy.com/.well-known/mcp.json) is also available.
+No Jobicy account or access token is needed to use public, read-only tools. The hosted server determines the available tools and schemas dynamically.
 
-After connecting, ask your assistant to list available MCP tools. You should see `search_jobs`, `get_job`, and the other tools below.
+## Local STDIO bridge
 
-## Run the repository server
+If your MCP client supports only local STDIO commands, this repository can forward requests to the same hosted endpoint. It does not implement its own job search or store data.
 
-Requires Node.js 20 or newer. Install dependencies with `pnpm install --frozen-lockfile`, then run `node server.js`. The process speaks MCP over standard input and output; it is intended to be launched by an MCP client or hosting platform. No Jobicy credentials are required. All job, company, role, and taxonomy data comes from the public Jobicy APIs.
+Requires Node.js 20 or newer:
 
-A client that supports local MCP commands can use:
+```bash
+pnpm install --frozen-lockfile
+node server.js
+```
+
+Configure your MCP client with the absolute path to `server.js`:
 
 ```json
 {
@@ -41,62 +50,21 @@ A client that supports local MCP commands can use:
 }
 ```
 
-For Glama's Dockerfile configuration, build the repository with `pnpm install --frozen-lockfile` and start the local process with `mcp-proxy -- node server.js`. Do not configure `mcp-remote` or the hosted `/mcp` URL as the container command: Glama's repository build runs the MCP process from this source. The live Jobicy endpoint remains available independently.
+For Glama environments that require a process command, use `mcp-proxy -- node server.js` after installing dependencies. The bridge connects only to `https://jobicy.com/mcp`, so outbound HTTPS access to that host is required.
 
-## Find jobs
+## Available features
 
-Use `search_jobs` for most searches. It returns compact vacancies without the full job description. For example, ask your assistant:
+Ask the client to list tools after connecting. The hosted service provides job search, job details, similar vacancies, company searches, company jobs, career roles, taxonomy resolution and public resource templates. The exact list, input schemas, pagination and visibility rules are maintained by the hosted MCP service, not by this repository.
 
-> Find up to 10 remote backend engineering jobs open to candidates in the UK. Show the title, company, salary if available, and Jobicy link.
+The public endpoint is read-only. Streamable HTTP clients should connect to the URL above.
 
-An equivalent tool call is:
+## Testing
 
-```json
-{
-  "name": "search_jobs",
-  "arguments": {
-    "query": "backend engineer",
-    "geo": "uk",
-    "limit": 10
-  }
-}
+```bash
+pnpm test
 ```
 
-The response contains `jobs`, `jobCount`, `nextCursor`, `hasMore`, and `appliedFilters`. `jobCount` counts **only jobs in that response**, not all matching jobs. To request another page, pass `nextCursor` back as `cursor` with the same filters. Treat the cursor as an opaque value; changing filters invalidates it.
-
-For one vacancy's complete description, call `get_job` with its numeric `id`. The `geo` filter describes candidate eligibility: a country search may also include jobs open to its broader region or to candidates anywhere. Salary and logo fields are included only when public data is available.
-
-## Available tools
-
-| Tool | When to use it | Inputs |
-| --- | --- | --- |
-| `search_jobs` | Search compact public job results with cursor pagination. | Optional `query`, `geo`, `industry`, `jobType`, `jobLevel`, `company`, `postedAfter`, `salaryMin`, `salaryMax`, `currency`, `limit`, `cursor`. |
-| `get_job` | Read one full public vacancy. | Required `id`. |
-| `get_similar_jobs` | Find a short list of related vacancies. | Required `jobId`; optional `limit`. |
-| `search_companies` | Find a specific public company or a small relevant set. This is a search, not a company directory. | At least one of `query`, `industry`, or `geo`; optional `limit` (up to 10). |
-| `get_company` | Read one public company profile. | Required `id` (numeric ID or slug). |
-| `get_company_jobs` | Find public jobs linked to one company. | Required `companyId`; optional `limit`, `cursor`. |
-| `get_role` | Read a Jobicy career role guide. | Required `role` slug. |
-| `get_related_roles` | Explore roles related to a career role. | Required `role`; optional `limit`. |
-| `resolve_taxonomy` | Turn a location or industry name into a Jobicy filter slug. | Required `type` (`location` or `industry`) and `query`. |
-| `list_taxonomies` | Browse available public filter slugs and labels. | Required `type`: `locations`, `industries`, `job_types`, or `job_levels`. |
-
-If a filter is obvious, call `search_jobs` directly. When unsure, use `resolve_taxonomy`: for example, `United States` resolves to `usa`, and `Developer` can resolve to `engineering`. If a match is uncertain, the tool returns candidates instead of guessing. Location labels in the new tools are shown without display emoji.
-
-### Legacy tools
-
-Existing MCP clients can continue to use:
-
-| Tool | Inputs | Compatibility |
-| --- | --- | --- |
-| `get_jobs` | `count`, `geo`, `industry`, `tag`; aliases `location`, `category`, `search`, `keyword`. | Keeps the original full jobs feed and JSON in `content.text`. |
-| `get_taxonomies` | `type`: `locations` or `industries`. | Keeps the original JSON in `content.text`. |
-
-New tools provide both `structuredContent` and readable JSON in `content`. All tools are read-only. Responses do not provide global job or company totals or Jobicy internal statistics.
-
-## Resources
-
-Clients that support MCP Resources can read individual public entities using `jobicy://jobs/{id}`, `jobicy://companies/{id}`, and `jobicy://roles/{slug}`. Public reference lists are available at `jobicy://taxonomies/locations` and `jobicy://taxonomies/industries`. Resources supplement the tools; they do not expose an all-jobs or all-companies feed.
+The test suite uses a mocked MCP service and does not contact production.
 
 ## Help and security
 
